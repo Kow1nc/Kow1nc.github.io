@@ -409,7 +409,40 @@
             audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
             playBtn.innerHTML = audioPlayer.paused ? '▶' : '⏸';
         }
-
+        function createSnow() {
+            const snowContainer = document.querySelector('.snow-container');
+            const snowCount = 100;
+            
+            for(let i = 0; i < snowCount; i++) {
+                const snow = document.createElement('div');
+                snow.className = 'snow';
+                
+                // Случайные параметры
+                const size = Math.random() * 4 + 3;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 3 + 5;
+                const drift = Math.random() * 200 - 100;
+                
+                snow.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${left}%;
+                    animation-delay: ${delay}s;
+                    animation-duration: ${duration}s;
+                `;
+                
+                // Перезапуск анимации
+                snow.addEventListener('animationend', () => {
+                    snow.remove();
+                    const newSnow = document.createElement('div');
+                    newSnow.className = 'snow';
+                    newSnow.style.cssText = snow.style.cssText;
+                    snowContainer.appendChild(newSnow);
+                });
+                
+                snowContainer.appendChild(snow);
+            }
         function nextTrack() {
             currentTrack = (currentTrack + 1) % tracks.length;
             audioPlayer.src = tracks[currentTrack];
@@ -428,5 +461,6 @@
             audioPlayer.volume = volume;
         }
     </script>
+    window.addEventListener('load', createSnow);
 </body>
 </html>
