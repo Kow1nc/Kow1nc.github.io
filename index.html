@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kow1nc | Cyber Coder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+
+        :root {
+            --main-color: #ffffff;
+            --glow-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .video-bg {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            filter: brightness(0.4);
+            transform: translateZ(0);
+        }
+
+        .card {
+            width: 500px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 50px var(--glow-color);
+            z-index: 2;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s;
+
+        }
+ 
+        .card.active {
+            opacity: 1;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            backdrop-filter: blur(8px);
+            z-index: -1;
+        }
+
+        .avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid var(--main-color);
+            margin: 0 auto 25px;
+            display: block;
+            object-fit: cover;
+            filter: drop-shadow(0 0 15px var(--glow-color));
+        }
+
+        .content {
+            color: #fff;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--main-color);
+            font-size: 2.5em;
+            margin: 20px 0;
+            position: relative;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        p {
+            margin: 10px 0;
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+        }
+
+        .player {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 10px;
+            z-index: 3;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button {
+            background: none;
+            border: 1px solid var(--main-color);
+            color: var(--main-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: 0.3s;
+            cursor: none;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        input[type="range"] {
+            width: 80px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            appearance: none;
+            border-radius: 2px;
+            margin: 0 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--main-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--glow-color);
+            cursor: none;
+        }
+
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            gap: 25px;
+        }
+
+        .social-link {
+            color: white;
+            font-size: 24px;
+            transition: 0.3s;
+            text-shadow: 0 0 15px rgba(255,255,255,0.5);
+            position: relative;
+        }
+
+        .social-link:hover {
+            color: var(--main-color);
+            transform: translateY(-3px);
+            text-shadow: 0 0 25px rgba(255,255,255,0.8);
+        }
+
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            background: rgba(0,0,0,0.8);
+            cursor: none;
+        }
+
+        .preloader h2 {
+            color: white;
+            font-size: 3em;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            animation: pulse 2s infinite;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .track-info {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(6px);
+            white-space: nowrap;
+            z-index: 3;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            filter: blur(2px);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            transition: 
+                transform 0.1s,
+                opacity 0.3s;
+            z-index: 9999;
+        }
+
+        .cursor::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: pulseCursor 1.5s infinite;
+        }
+
+        @keyframes pulseCursor {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+        }
+
+    </style>
+</head>
+<body>
+    
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="video.mp4" type="video/mp4">
+    </video>
+
+    <div class="preloader">
+        <h2>Ты точно хочешь увидеть это?</h2>
+    </div>
+    
+    <div class="card">
+        <img src="Avatar.png" class="avatar" alt="Kow1nc Avatar">
+        <div class="content">
+            <h1 class="glitch">Kow1nc</h1>
+            <p>🚀 Легенда югейма</p>
+            <p>🔥 Создатель крейза</p>
+            <p>💻 30+ слитых сурсов</p>
+            <p>📌 Лучший протект</p>
+            <p>🔧 KPAWCUCTEM COCU</p>
+            
+            <div class="social-links">
+                <a href="https://youtube.com/channel/Kow1nc/" target="_blank" class="social-link">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://discord.gg/PKHtQp2W4E" target="_blank" class="social-link">
+                    <i class="fab fa-discord"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="track-info" id="trackInfo">Трек: ...</div>
+    <div class="player">
+        <audio id="audioPlayer"></audio>
+        <div class="controls">
+            <button onclick="previousTrack()">⏮</button>
+            <button onclick="togglePlay()" id="playBtn">▶</button>
+            <button onclick="nextTrack()">⏭</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="1" onchange="setVolume(this.value)">
+        </div>
+    </div>
+        <div class="cursor"></div>
+    <script>
+        // Обновленный код для плавного сброса 3D эффекта
+        card.addEventListener('mouseleave', () => {
+            document.removeEventListener('mousemove', handleMove);
+            
+            card.style.transform = `
+                perspective(1000px)
+                rotateX(0deg)
+                rotateY(0deg)
+                translateZ(0)
+            `;
+        });
+
+        // Плавное появление курсора
+        cursor.style.opacity = '0';
+        document.addEventListener('mousemove', () => {
+            cursor.style.opacity = '1';
+        });
+    </script>
+    <script>
+        // Курсор
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', e => {
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+        });
+
+        // Preloader Logic
+        const preloader = document.querySelector('.preloader');
+        const card = document.querySelector('.card');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackTitles = [
+            "Clonnex - ТЦК",
+            "5opka - ФУБЛЯ",
+            "Clonnex - Pitbull"
+        ];
+        const trackInfo = document.getElementById('trackInfo');
+        let currentTrack = 0;
+        
+        function initExperience() {
+            preloader.style.display = 'none';
+            card.classList.add('active');
+            audioPlayer.play().catch(() => {});
+            startGlitch();
+            trackInfo.textContent = `Трек: ${trackTitles[currentTrack]}`;
+        }
+
+        document.addEventListener('click', () => {
+            if(preloader.style.display !== 'none') {
+                initExperience();
+            }
+        });
+
+        // 3D Effect
+        let rafId;
+        const handleMove = (e) => {
+            if(rafId) cancelAnimationFrame(rafId);
+            
+            rafId = requestAnimationFrame(() => {
+                const rect = card.getBoundingClientRect();
+                const centerX = rect.left + rect.width/2;
+                const centerY = rect.top + rect.height/2;
+                
+                const rotateX = (centerY - e.clientY) / 30;
+                const rotateY = (e.clientX - centerX) / 30;
+                
+                card.style.transform = `
+                    perspective(1000px)
+                    rotateX(${rotateX}deg)
+                    rotateY(${rotateY}deg)
+                `;
+            });
+        };
+
+        card.addEventListener('mouseenter', () => {
+            document.addEventListener('mousemove', handleMove);
+        });
+
+        card.addEventListener('mouseleave', () => {
+            document.removeEventListener('mousemove', handleMove);
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        });
+
+        // Glitch Effect
+        const chars = '*#$%&?@~';
+        const originalText = 'Kow1nc';
+        let glitchInterval;
+
+        function randomChar() {
+            return chars[Math.floor(Math.random() * chars.length)];
+        }
+
+        function startGlitch() {
+            glitchInterval = setInterval(() => {
+                const textArray = originalText.split('');
+                for(let i = 0; i < textArray.length; i++) {
+                    if(Math.random() < 0.4) textArray[i] = randomChar();
+                }
+                document.querySelector('.glitch').textContent = textArray.join('');
+                
+                setTimeout(() => {
+                    document.querySelector('.glitch').textContent = originalText;
+                }, 50);
+            }, 100);
+        }
+
+        // Audio Player
+        const playBtn = document.getElementById('playBtn');
+        const tracks = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
+
+        audioPlayer.src = tracks[currentTrack];
+
+        function togglePlay() {
+            audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
+            playBtn.innerHTML = audioPlayer.paused ? '▶' : '⏸';
+        }
+
+        function nextTrack() {
+            currentTrack = (currentTrack + 1) % tracks.length;
+            audioPlayer.src = tracks[currentTrack];
+            audioPlayer.play();
+            trackInfo.textContent = `Трек: ${trackTitles[currentTrack]}`;
+        }
+
+        function previousTrack() {
+            currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+            audioPlayer.src = tracks[currentTrack];
+            audioPlayer.play();
+            trackInfo.textContent = `Трек: ${trackTitles[currentTrack]}`;
+        }
+
+        function setVolume(volume) {
+            audioPlayer.volume = volume;
+        }
+    </script>
+</body>
+</html>
