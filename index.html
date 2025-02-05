@@ -29,16 +29,31 @@
             --glow-color: rgba(255, 255, 255, 0.3);
         }
 
-        .video-bg {
+        .video-container {
             position: fixed;
-            right: 0;
-            bottom: 0;
-            min-width: 100%;
-            min-height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 0;
-            pointer-events: none;
+        }
+
+        .video-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             filter: brightness(0.4);
-            transform: translateZ(0);
+        }
+
+        .video-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(10px);
+            z-index: 1;
+            pointer-events: none;
         }
 
         .card {
@@ -53,10 +68,9 @@
             z-index: 2;
             overflow: hidden;
             opacity: 0;
-            transition: opacity 0.5s;
-
+            transition: opacity 0.5s, transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
- 
+
         .card.active {
             opacity: 1;
         }
@@ -250,14 +264,54 @@
             50% { transform: scale(1.5); opacity: 0.3; }
         }
 
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .snow {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            filter: blur(1px);
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(200px);
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
+    <div class="snow-container"></div>
+    <div class="video-container">
+        <div class="video-blur"></div>
+        <video class="video-bg" autoplay muted loop playsinline>
+            <source src="video.mp4" type="video/mp4">
+        </video>
+    </div>
     
-    <video class="video-bg" autoplay muted loop playsinline>
-        <source src="video.mp4" type="video/mp4">
-    </video>
-
+    <div class="cursor"></div>
+    
     <div class="preloader">
         <h2>Ты точно хочешь увидеть это?</h2>
     </div>
@@ -269,8 +323,9 @@
             <p>🚀 Java/C++/C#</p>
             <p>🔥 Создатель Kraze Newera</p>
             <p>💻 20+ слитых сурсов</p>
-            <p>📌 0 Пасты</p>
+            <p>📌 0 Паст</p>
             <p>#@?@# Game crashed! Sosi huyaku blya. #@?@#</p>
+            
             <div class="social-links">
                 <a href="https://youtube.com/channel/Kow1nc/" target="_blank" class="social-link">
                     <i class="fab fa-youtube"></i>
@@ -282,36 +337,18 @@
         </div>
     </div>
 
-    <div class="track-info" id="trackInfo">Трек: ...</div>
+    <div class="track-info" id="trackInfo">Трек: Loading...</div>
+    
     <div class="player">
         <audio id="audioPlayer"></audio>
         <div class="controls">
             <button onclick="previousTrack()">⏮</button>
-            <button onclick="togglePlay()" id="playBtn">▶</button>
+            <button onclick="togglePlay()" id="playBtn">⏸</button>
             <button onclick="nextTrack()">⏭</button>
             <input type="range" id="volume" min="0" max="1" step="0.01" value="1" onchange="setVolume(this.value)">
         </div>
     </div>
-        <div class="cursor"></div>
-    <script>
-        // Обновленный код для плавного сброса 3D эффекта
-        card.addEventListener('mouseleave', () => {
-            document.removeEventListener('mousemove', handleMove);
-            
-            card.style.transform = `
-                perspective(1000px)
-                rotateX(0deg)
-                rotateY(0deg)
-                translateZ(0)
-            `;
-        });
 
-        // Плавное появление курсора
-        cursor.style.opacity = '0';
-        document.addEventListener('mousemove', () => {
-            cursor.style.opacity = '1';
-        });
-    </script>
     <script>
         // Курсор
         const cursor = document.querySelector('.cursor');
@@ -325,24 +362,38 @@
         const card = document.querySelector('.card');
         const audioPlayer = document.getElementById('audioPlayer');
         const trackTitles = [
-            "Clonnex - ТЦК",
-            "5opka - ФУБЛЯ",
-            "Clonnex - Pitbull"
+            "Kraze Newera Anthem",
+            "Digital Revolution",
+            "Code Symphony"
         ];
         const trackInfo = document.getElementById('trackInfo');
         let currentTrack = 0;
         
-        function initExperience() {
+        async function initExperience() {
             preloader.style.display = 'none';
             card.classList.add('active');
-            audioPlayer.play().catch(() => {});
+            try {
+                await audioPlayer.play();
+                playBtn.innerHTML = '⏸';
+            } catch (err) {
+                playBtn.innerHTML = '▶';
+            }
             startGlitch();
             trackInfo.textContent = `Трек: ${trackTitles[currentTrack]}`;
         }
 
-        document.addEventListener('click', () => {
-            if(preloader.style.display !== 'none') {
-                initExperience();
+        // Автозапуск музыки
+        document.addEventListener('DOMContentLoaded', async () => {
+            audioPlayer.src = 'song1.mp3';
+            audioPlayer.volume = 1;
+            try {
+                await audioPlayer.play();
+                playBtn.innerHTML = '⏸';
+                preloader.style.display = 'none';
+                card.classList.add('active');
+                startGlitch();
+            } catch (err) {
+                document.addEventListener('click', initExperience, { once: true });
             }
         });
 
@@ -373,7 +424,12 @@
 
         card.addEventListener('mouseleave', () => {
             document.removeEventListener('mousemove', handleMove);
-            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+            card.style.transform = `
+                perspective(1000px)
+                rotateX(0deg)
+                rotateY(0deg)
+                translateZ(0)
+            `;
         });
 
         // Glitch Effect
@@ -403,11 +459,14 @@
         const playBtn = document.getElementById('playBtn');
         const tracks = ['song1.mp3', 'song2.mp3', 'song3.mp3'];
 
-        audioPlayer.src = tracks[currentTrack];
-
         function togglePlay() {
-            audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
-            playBtn.innerHTML = audioPlayer.paused ? '▶' : '⏸';
+            if(audioPlayer.paused) {
+                audioPlayer.play();
+                playBtn.innerHTML = '⏸';
+            } else {
+                audioPlayer.pause();
+                playBtn.innerHTML = '▶';
+            }
         }
 
         function nextTrack() {
@@ -427,6 +486,42 @@
         function setVolume(volume) {
             audioPlayer.volume = volume;
         }
+
+        // Снегопад
+        function createSnow() {
+            const snowContainer = document.querySelector('.snow-container');
+            const snowCount = 100;
+            
+            for(let i = 0; i < snowCount; i++) {
+                const snow = document.createElement('div');
+                snow.className = 'snow';
+                
+                const size = Math.random() * 4 + 3;
+                const left = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 3 + 5;
+                
+                snow.style.cssText = `
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${left}%;
+                    animation-delay: ${delay}s;
+                    animation-duration: ${duration}s;
+                `;
+                
+                snow.addEventListener('animationend', () => {
+                    snow.remove();
+                    const newSnow = document.createElement('div');
+                    newSnow.className = 'snow';
+                    newSnow.style.cssText = snow.style.cssText;
+                    snowContainer.appendChild(newSnow);
+                });
+                
+                snowContainer.appendChild(snow);
+            }
+        }
+
+        createSnow();
     </script>
 </body>
 </html>
