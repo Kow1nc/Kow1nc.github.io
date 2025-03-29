@@ -350,21 +350,19 @@
     </div>
 
     <script>
-        // Курсор
         const cursor = document.querySelector('.cursor');
         document.addEventListener('mousemove', e => {
             cursor.style.left = `${e.clientX}px`;
             cursor.style.top = `${e.clientY}px`;
         });
 
-        // Preloader Logic
         const preloader = document.querySelector('.preloader');
         const card = document.querySelector('.card');
         const audioPlayer = document.getElementById('audioPlayer');
         const trackTitles = [
-            "Clonnex - ТЦК",
-            "5opka - ФУБЛЯ",
-            "Clonnex - Pitbull"
+            "one",
+            "two",
+            "three"
         ];
         const trackInfo = document.getElementById('trackInfo');
         let currentTrack = 0;
@@ -382,7 +380,6 @@
             trackInfo.textContent = `Трек: ${trackTitles[currentTrack]}`;
         }
 
-        // Автозапуск музыки
         document.addEventListener('DOMContentLoaded', async () => {
             audioPlayer.src = 'song1.mp3';
             audioPlayer.volume = 1;
@@ -396,8 +393,6 @@
                 document.addEventListener('click', initExperience, { once: true });
             }
         });
-
-        // 3D Effect
         let rafId;
         const handleMove = (e) => {
             if(rafId) cancelAnimationFrame(rafId);
@@ -432,8 +427,8 @@
             `;
         });
 
-        // Glitch Effect
-        const chars = '*#$%&?@~';
+
+        const chars = '*';
         const originalText = 'Kow1nc';
         let glitchInterval;
 
